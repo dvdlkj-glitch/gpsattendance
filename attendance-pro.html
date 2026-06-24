@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0e1116">
 <title>GPS Attendance &amp; Field Tracking</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -13,15 +16,16 @@
     --bg:#0e1116;--card:#161b22;--line:#283039;--txt:#e6edf3;--muted:#8b97a3;
     --accent:#3b82f6;--accent2:#2563eb;--green:#16a34a;--red:#dc2626;--amber:#d97706;--purple:#7c3aed;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
-  .wrap{max-width:1080px;margin:0 auto;padding:20px}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px;padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right));padding-bottom:max(20px,env(safe-area-inset-bottom))}
   h1{font-size:20px}.sub{color:var(--muted);font-size:13px;margin-top:2px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
   label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
-  input,select{width:100%;padding:11px 13px;background:#0c1117;border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:15px}
+  input,select{width:100%;padding:13px 14px;background:#0c1117;border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:16px}
   input:focus,select:focus{outline:none;border-color:var(--accent)}
-  button{cursor:pointer;border:none;border-radius:9px;font-size:14px;font-weight:600;padding:11px 16px;color:#fff}
+  button{cursor:pointer;border:none;border-radius:9px;font-size:14px;font-weight:600;padding:12px 16px;color:#fff;touch-action:manipulation;min-height:44px}
   .btn-primary{background:var(--accent)}.btn-primary:hover{background:var(--accent2)}
   .btn-green{background:var(--green)}.btn-red{background:var(--red)}
   .btn-green:disabled,.btn-red:disabled{background:#374151;cursor:not-allowed;opacity:.7}
@@ -36,8 +40,8 @@
   .hidden{display:none}
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
   .who{font-size:14px}.who b{color:var(--accent)}.who .role{color:var(--muted);font-size:12px}
-  nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-  nav button{background:#0c1117;border:1px solid var(--line);color:var(--muted);font-weight:600}
+  nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;position:sticky;top:0;z-index:500;background:var(--bg);padding:8px 0}
+  nav button{background:#0c1117;border:1px solid var(--line);color:var(--muted);font-weight:600;flex:1;min-width:max-content}
   nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
   .grid{display:grid;gap:14px}
   .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
@@ -51,7 +55,8 @@
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
   th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
   td.num{font-variant-numeric:tabular-nums}
-  .scroll{max-height:340px;overflow:auto}
+  .scroll{max-height:340px;overflow:auto;-webkit-overflow-scrolling:touch}
+  .map{touch-action:pan-x pan-y}
   .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
   .pill.in{background:rgba(22,163,74,.16);color:#86efac}
   .pill.out{background:rgba(217,119,6,.16);color:#fcd34d}
@@ -62,6 +67,36 @@
   .sectsub{color:var(--muted);font-size:12px;margin-bottom:12px}
   .legend{font-size:12px;color:var(--muted);margin-top:10px}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+  /* ---- Tablet (iPad) ---- */
+  @media(max-width:900px){
+    .wrap{max-width:760px}
+    #liveMap{height:380px}
+  }
+  /* ---- Phone ---- */
+  @media(max-width:600px){
+    .wrap{padding:14px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+    h1{font-size:18px}
+    .card{padding:16px;border-radius:12px}
+    nav{gap:6px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+    nav::-webkit-scrollbar{display:none}
+    nav button{flex:0 0 auto;padding:11px 14px}
+    .topbar{align-items:flex-start}
+    .btn-green,.btn-red{font-size:16px;padding:16px;min-height:54px}
+    .grid.g2{grid-template-columns:1fr}            /* stack check-in / check-out */
+    .stat .n{font-size:20px}
+    .map{height:240px}
+    #liveMap{height:320px}
+    .toolbar{gap:8px}
+    .toolbar .fld{min-width:100%}                  /* filters stack full-width */
+    .toolbar button{width:100%}
+    th,td{padding:8px 7px}
+    .leaflet-popup-content{font-size:13px}
+  }
+  /* Larger thumb targets for the punch buttons on touch devices */
+  @media(hover:none){
+    button:active{filter:brightness(1.12)}
+  }
 </style>
 </head>
 <body>
