@@ -131,6 +131,9 @@
   .demo-toast{background:rgba(22,163,74,.14);color:#86efac;border:1px solid rgba(22,163,74,.3);border-radius:8px;padding:8px 12px;font-size:12px;margin-top:12px;align-self:flex-start}
   .demo-map{background:#0a1410;border:1px solid var(--line);border-radius:10px;position:relative;overflow:hidden;background-image:linear-gradient(#11212b 1px,transparent 1px),linear-gradient(90deg,#11212b 1px,transparent 1px);background-size:28px 28px}
   .demo-map.mini{height:88px;margin-top:10px}
+  .demo-tourmap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0a1410;min-height:120px}
+  .demo-tourmap.mini{margin-top:10px;min-height:92px}
+  .demo-tourmap .leaflet-tile-pane{filter:saturate(.9) brightness(.92)}
   .demo-mappin{position:absolute;width:15px;height:15px;border-radius:50%;border:2px solid #0a0e13;transform:translate(-50%,-50%)}
   .demo-mappin.green{background:var(--green);box-shadow:0 0 0 5px rgba(22,163,74,.2)}
   .demo-mappin.amber{background:var(--amber);box-shadow:0 0 0 5px rgba(217,119,6,.2)}
@@ -195,9 +198,7 @@
               <div class="anim-pop demo-bigbtn red" style="animation-delay:.4s">🏁 Check out</div>
             </div>
             <div class="anim-fade demo-toast" style="animation-delay:1.2s">✓ Checked in 09:12 · 3.157, 101.712</div>
-            <div class="demo-map mini" style="flex:1">
-              <span class="anim-pin demo-mappin green" style="left:46%;top:48%;animation-delay:1s"></span>
-            </div>
+            <div id="demoTourMini" class="demo-tourmap mini" style="flex:1"></div>
           </div>
 
           <!-- 2 · Dashboard -->
@@ -217,12 +218,7 @@
           <!-- 3 · Live map -->
           <div class="scene" data-sc="3" style="padding:16px">
             <div class="anim-fade demo-h" style="animation-delay:.05s;margin-bottom:8px">Where is everyone?</div>
-            <div class="demo-map" style="flex:1">
-              <span class="anim-pop demo-mappin green" data-name="Alice" style="left:30%;top:36%;animation-delay:.3s"></span>
-              <span class="anim-pop demo-mappin green" data-name="Dave" style="left:62%;top:54%;animation-delay:.45s"></span>
-              <span class="anim-pop demo-mappin amber" data-name="Bob" style="left:43%;top:74%;animation-delay:.6s"></span>
-              <span class="anim-pop demo-mappin amber" data-name="Carol" style="left:75%;top:30%;animation-delay:.75s"></span>
-            </div>
+            <div id="demoTourMap" class="demo-tourmap" style="flex:1"></div>
           </div>
 
           <!-- 4 · Reports & export -->
@@ -793,6 +789,32 @@ function demoShow(i){
   _dProg.style.transition="none";_dProg.style.width="0%";void _dProg.offsetWidth;
   if(demoPlaying){_dProg.style.transition="width "+DEMO_DUR+"ms linear";_dProg.style.width="100%";}
   if(demoIdx===2)demoCountUp();
+  if(demoIdx===1)demoMapMini();
+  if(demoIdx===3)demoMapBig();
+}
+let _tourMap=null,_tourMini=null;
+function demoMapBig(){
+  const el=document.getElementById("demoTourMap");if(!el||typeof L==="undefined")return;
+  if(!_tourMap){
+    _tourMap=L.map(el,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false});
+    _tourMap.setView([3.139,101.6869],11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(_tourMap);
+    const pts=[{n:"Alice",ll:[3.157,101.712],c:"#16a34a"},{n:"Dave",ll:[3.083,101.717],c:"#16a34a"},{n:"Bob",ll:[3.139,101.687],c:"#d97706"},{n:"Carol",ll:[3.074,101.518],c:"#d97706"}];
+    const b=[];
+    pts.forEach(p=>{L.circleMarker(p.ll,{radius:9,color:p.c,fillColor:p.c,fillOpacity:.85,weight:2}).addTo(_tourMap).bindTooltip(p.n,{permanent:true,direction:"top",offset:[0,-6],className:"namelbl"});b.push(p.ll);});
+    _tourMap._b=b;
+  }
+  setTimeout(()=>{_tourMap.invalidateSize();_tourMap.fitBounds(_tourMap._b,{padding:[36,36],maxZoom:12});},140);
+}
+function demoMapMini(){
+  const el=document.getElementById("demoTourMini");if(!el||typeof L==="undefined")return;
+  if(!_tourMini){
+    _tourMini=L.map(el,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,tap:false});
+    _tourMini.setView([3.157,101.712],15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(_tourMini);
+    L.circleMarker([3.157,101.712],{radius:8,color:"#16a34a",fillColor:"#16a34a",fillOpacity:.85,weight:2}).addTo(_tourMini).bindTooltip("You",{permanent:true,direction:"top",offset:[0,-6],className:"namelbl"});
+  }
+  setTimeout(()=>{_tourMini.invalidateSize();_tourMini.setView([3.157,101.712],15);},140);
 }
 function demoRestart(){clearTimeout(demoTimer);if(demoPlaying)demoTimer=setTimeout(()=>{demoShow(demoIdx+1);demoRestart();},DEMO_DUR);}
 function demoToggle(){demoPlaying=!demoPlaying;_dPlay.textContent=demoPlaying?"❚❚":"▶";if(demoPlaying){demoShow(demoIdx);demoRestart();}else{clearTimeout(demoTimer);_dProg.style.transition="none";}}
