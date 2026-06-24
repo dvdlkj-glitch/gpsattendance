@@ -67,6 +67,8 @@
   .sectsub{color:var(--muted);font-size:12px;margin-bottom:12px}
   .legend{font-size:12px;color:var(--muted);margin-top:10px}
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .namelbl{background:rgba(20,26,33,.92);border:1px solid #283039;color:#e6edf3;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;box-shadow:none}
+  .namelbl::before{display:none}
 
   /* ---- Tablet (iPad) ---- */
   @media(max-width:900px){
@@ -113,7 +115,7 @@
       <input id="p" type="password" placeholder="Password">
       <button class="btn-primary full" style="margin-top:18px" onclick="doLogin()">Log in</button>
       <div class="msg" id="loginMsg"></div>
-      <p class="hint">Engineers: <b>alice</b>/<b>pass123</b>, <b>bob</b>/<b>pass123</b>, <b>carol</b>/<b>pass123</b><br>Manager (sees team live map): <b>admin</b>/<b>admin123</b></p>
+      <p class="hint">Engineers: <b>alice</b> · <b>bob</b> · <b>carol</b> · <b>dave</b> (pw <b>pass123</b>)<br>Manager (team live map): <b>admin</b> / <b>admin123</b><br>Boss (overview dashboard): <b>boss</b> / <b>boss123</b></p>
     </div>
   </div>
 
@@ -128,6 +130,35 @@
     </div>
 
     <nav id="nav"></nav>
+
+    <!-- TAB: OVERVIEW (boss) -->
+    <section id="tab-overview" class="tab hidden">
+      <div class="card">
+        <h2>Team Overview Dashboard</h2>
+        <div class="sectsub">All engineers, live status, today's check-in times and field locations. Auto-refreshes every 15s.</div>
+        <div class="grid g4" id="ovStats"></div>
+      </div>
+      <div class="card">
+        <h2>Engineer status — today</h2>
+        <div class="sectsub">Who's on duty, when they checked in, and where they are.</div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Engineer</th><th>Status</th><th>Check-in</th><th>Check-out</th><th>Hrs today</th><th>Last location</th><th>Current task</th></tr></thead>
+            <tbody id="ovBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Where is everyone?</h2>
+        <div class="sectsub">Latest known GPS position of each engineer across different sites.</div>
+        <div class="map" id="ovMap" style="height:440px"></div>
+        <div class="legend"><span class="dot" style="background:var(--green)"></span>On duty (checked in)&nbsp;&nbsp;<span class="dot" style="background:var(--amber)"></span>Off duty (checked out)</div>
+      </div>
+      <div class="card">
+        <h2>Team hours — last 7 periods</h2>
+        <div style="height:280px"><canvas id="ovChart"></canvas></div>
+      </div>
+    </section>
 
     <!-- TAB: CHECK IN/OUT -->
     <section id="tab-checkin" class="tab">
@@ -211,10 +242,14 @@ const USERS = {
   alice:{pw:"pass123",role:"engineer",name:"Alice Tan"},
   bob:{pw:"pass123",role:"engineer",name:"Bob Lim"},
   carol:{pw:"pass123",role:"engineer",name:"Carol Ng"},
-  admin:{pw:"admin123",role:"manager",name:"Admin (Manager)"}
+  dave:{pw:"pass123",role:"engineer",name:"Dave Wong"},
+  admin:{pw:"admin123",role:"manager",name:"Admin (Manager)"},
+  boss:{pw:"boss123",role:"boss",name:"Boss (Director)"}
 };
-const LS="attendance_events_v2";
+const LS="attendance_events_v3";
 let me=null, myMap=null, myMarker=null, liveMap=null, liveLayer=null, repChart=null, liveTimer=null;
+let ovMap=null, ovLayer=null, ovChart=null;
+function isManager(){return me && (me.role==="manager"||me.role==="boss");}
 
 function events(){try{return JSON.parse(localStorage.getItem(LS))||[]}catch(e){return[]}}
 function save(ev){localStorage.setItem(LS,JSON.stringify(ev))}
@@ -225,16 +260,21 @@ function fmtTime(d){return d.toTimeString().slice(0,8)}
 /* ---- Seed demo data on first run ---- */
 function seed(){
   if(events().length) return;
-  const base={alice:[3.1570,101.7120],bob:[3.1390,101.6869],carol:[3.0738,101.5183]};
+  const base={alice:[3.1570,101.7120],bob:[3.1390,101.6869],carol:[3.0738,101.5183],dave:[3.0833,101.7167]};
   const tasks={alice:["Tower B aircon repair","Client site — Mid Valley","Routine inspection — KLCC"],
                bob:["Server room maintenance","Cabling — Bangsar branch","Generator service"],
-               carol:["Field survey — Shah Alam","Install — Subang depot","Safety audit"]};
+               carol:["Field survey — Shah Alam","Install — Subang depot","Safety audit"],
+               dave:["Pump overhaul — Cheras","Lift service — Bukit Bintang","Wiring check — Ampang"]};
   const ev=[]; let id=1;
   const today=new Date(); today.setHours(0,0,0,0);
+  // most recent weekday — engineers "on duty" there for the live demo
+  const recent=new Date(today);
+  while(recent.getDay()===0||recent.getDay()===6) recent.setDate(recent.getDate()-1);
+  const recentStr=fmtDate(recent);
   for(let back=34; back>=0; back--){
     const d=new Date(today); d.setDate(d.getDate()-back);
     const dow=d.getDay(); if(dow===0||dow===6) continue; // weekdays only
-    ["alice","bob","carol"].forEach(u=>{
+    ["alice","bob","carol","dave"].forEach(u=>{
       if(Math.random()<0.12) return; // occasional absence
       const [la,lo]=base[u];
       const jit=()=>(Math.random()-0.5)*0.03;
@@ -244,7 +284,9 @@ function seed(){
       const dobj=new Date(d); dobj.setHours(outH,outM,0,0);
       const task=tasks[u][Math.floor(Math.random()*tasks[u].length)];
       ev.push({id:id++,user:u,type:"in",iso:di.toISOString(),lat:+(la+jit()).toFixed(6),lng:+(lo+jit()).toFixed(6),accuracy:5+Math.floor(Math.random()*25),task});
-      ev.push({id:id++,user:u,type:"out",iso:dobj.toISOString(),lat:+(la+jit()).toFixed(6),lng:+(lo+jit()).toFixed(6),accuracy:5+Math.floor(Math.random()*25),task});
+      // Keep alice & dave "on duty" on the most recent weekday (no check-out yet)
+      if(!(fmtDate(d)===recentStr && (u==="alice"||u==="dave")))
+        ev.push({id:id++,user:u,type:"out",iso:dobj.toISOString(),lat:+(la+jit()).toFixed(6),lng:+(lo+jit()).toFixed(6),accuracy:5+Math.floor(Math.random()*25),task});
     });
   }
   save(ev);
@@ -261,7 +303,7 @@ function doLogin(){
     document.getElementById("whoRole").textContent="· "+rec.role;
     document.getElementById("loginView").classList.add("hidden");
     document.getElementById("appView").classList.remove("hidden");
-    buildNav(); populateFilters(); showTab("checkin");
+    buildNav(); populateFilters(); showTab(isManager()?"overview":"checkin");
   }else flash("loginMsg","Invalid username or password.","err");
 }
 function logout(){
@@ -274,8 +316,12 @@ function logout(){
 
 /* ===================== NAV ===================== */
 function buildNav(){
-  const tabs=[["checkin","Check In/Out"],["records","Records"],["reports","Reports"]];
-  if(me.role==="manager") tabs.push(["live","Live Map"]);
+  let tabs;
+  if(isManager()){   // manager & boss: dashboard-first, no personal check-in
+    tabs=[["overview","📊 Dashboard"],["records","Staff Records"],["reports","Reports"],["live","Live Map"]];
+  }else{             // engineers
+    tabs=[["checkin","Check In/Out"],["records","My Records"],["reports","My Hours"]];
+  }
   const nav=document.getElementById("nav"); nav.innerHTML="";
   tabs.forEach(([k,lbl])=>{
     const b=document.createElement("button");b.textContent=lbl;b.id="navbtn-"+k;
@@ -290,6 +336,7 @@ function showTab(k){
   if(liveTimer){clearInterval(liveTimer);liveTimer=null;}
   if(k==="records")renderRecords();
   if(k==="reports")renderReports();
+  if(k==="overview"){renderOverview();liveTimer=setInterval(renderOverview,15000);}
   if(k==="live"){renderLive();liveTimer=setInterval(renderLive,15000);}
   if(k==="checkin"&&myMap)setTimeout(()=>myMap.invalidateSize(),100);
 }
@@ -299,7 +346,7 @@ function populateFilters(){
     Object.keys(USERS).filter(u=>USERS[u].role==="engineer").forEach(u=>h+=`<option value="${u}">${USERS[u].name}</option>`);
     return h;
   };
-  const isMgr=me.role==="manager";
+  const isMgr=isManager();
   const rf=document.getElementById("recUserFilter"),pf=document.getElementById("repUserFilter");
   rf.innerHTML=opts(isMgr); pf.innerHTML=opts(isMgr);
   if(!isMgr){rf.value=me.id;pf.value=me.id;}
@@ -340,7 +387,7 @@ function showMyMap(lat,lng,type){
 /* ===================== RECORDS ===================== */
 function visibleEvents(uFilter){
   let ev=events();
-  if(me.role!=="manager") ev=ev.filter(e=>e.user===me.id);
+  if(!isManager()) ev=ev.filter(e=>e.user===me.id);
   else if(uFilter&&uFilter!=="__all") ev=ev.filter(e=>e.user===uFilter);
   return ev.sort((a,b)=>new Date(b.iso)-new Date(a.iso));
 }
@@ -389,7 +436,7 @@ function periodKey(dateStr,period){
 function filteredSessions(){
   let ev=events();
   const f=document.getElementById("repUserFilter").value;
-  if(me.role!=="manager")ev=ev.filter(e=>e.user===me.id);
+  if(!isManager())ev=ev.filter(e=>e.user===me.id);
   else if(f&&f!=="__all")ev=ev.filter(e=>e.user===f);
   return pairSessions(ev);
 }
@@ -449,8 +496,76 @@ function renderLive(){
     m.bindPopup(`<b>${USERS[e.user].name}</b><br>${e.type==="in"?"🟢 On duty":"🟡 Off duty"}<br>${fmtDate(d)} ${fmtTime(d)}<br>📋 ${e.task||"—"}<br>📍 ${e.lat}, ${e.lng}`);
     bounds.push([e.lat,e.lng]);
   });
-  if(bounds.length)liveMap.fitBounds(bounds,{padding:[40,40],maxZoom:13});
-  setTimeout(()=>liveMap.invalidateSize(),120);
+  setTimeout(()=>{liveMap.invalidateSize();if(bounds.length)liveMap.fitBounds(bounds,{padding:[40,40],maxZoom:13});},160);
+}
+
+/* ===================== OVERVIEW (boss dashboard) ===================== */
+function renderOverview(){
+  const ev=events();
+  const today=fmtDate(new Date());
+  const engineers=Object.keys(USERS).filter(u=>USERS[u].role==="engineer");
+  // latest event per engineer
+  const latest={};
+  ev.forEach(e=>{if(USERS[e.user]&&USERS[e.user].role==="engineer"){
+    if(!latest[e.user]||new Date(e.iso)>new Date(latest[e.user].iso))latest[e.user]=e;}});
+  // per-engineer today summary
+  const rows=engineers.map(u=>{
+    const dayEv=ev.filter(e=>e.user===u&&fmtDate(new Date(e.iso))===today);
+    const ins=dayEv.filter(e=>e.type==="in").sort((a,b)=>new Date(a.iso)-new Date(b.iso));
+    const outs=dayEv.filter(e=>e.type==="out").sort((a,b)=>new Date(a.iso)-new Date(b.iso));
+    let hrs=0; pairSessions(dayEv).forEach(s=>hrs+=s.hours);
+    const last=latest[u]||null;
+    return {u,firstIn:ins[0]||null,lastOut:outs[outs.length-1]||null,last,status:last?last.type:null,hrs};
+  });
+  // KPIs
+  const onDuty=rows.filter(r=>r.status==="in").length;
+  const checkedToday=rows.filter(r=>r.firstIn).length;
+  const inMins=rows.filter(r=>r.firstIn).map(r=>{const d=new Date(r.firstIn.iso);return d.getHours()*60+d.getMinutes();});
+  const avg=inMins.length?Math.round(inMins.reduce((a,b)=>a+b,0)/inMins.length):null;
+  const avgStr=avg!=null?`${String(Math.floor(avg/60)).padStart(2,'0')}:${String(avg%60).padStart(2,'0')}`:"—";
+  const wk=periodKey(today,"week");
+  const weekHrs=pairSessions(ev).filter(s=>periodKey(s.date,"week")===wk).reduce((a,s)=>a+s.hours,0);
+  document.getElementById("ovStats").innerHTML=
+    stat(engineers.length,"Engineers")+
+    stat(onDuty,"On duty now")+
+    stat(checkedToday+"/"+engineers.length,"Checked in today")+
+    stat(avgStr,"Avg check-in today")+
+    stat(weekHrs.toFixed(1),"Team hours this week");
+  // status table
+  const body=document.getElementById("ovBody");body.innerHTML="";
+  rows.forEach(r=>{
+    const pill=r.status?`<span class="pill ${r.status}">${r.status==="in"?"ON DUTY":"OFF DUTY"}</span>`:'<span class="pill out">No data today</span>';
+    const inT=r.firstIn?fmtTime(new Date(r.firstIn.iso)):"—";
+    const outT=r.lastOut?fmtTime(new Date(r.lastOut.iso)):"—";
+    const loc=r.last?`${r.last.lat}, ${r.last.lng}`:"—";
+    const task=r.last&&r.last.task?r.last.task:"—";
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${USERS[r.u].name}</td><td>${pill}</td><td>${inT}</td><td>${outT}</td>`+
+      `<td class="num">${r.hrs?r.hrs.toFixed(2):"—"}</td><td class="num">${loc}</td><td>${task}</td>`;
+    body.appendChild(tr);
+  });
+  // map
+  if(!ovMap){
+    ovMap=L.map("ovMap").setView([3.139,101.6869],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(ovMap);
+    ovLayer=L.layerGroup().addTo(ovMap);
+  }
+  ovLayer.clearLayers();const bounds=[];
+  rows.forEach(r=>{if(!r.last)return;const e=r.last,c=e.type==="in"?"#16a34a":"#d97706",d=new Date(e.iso);
+    L.circleMarker([e.lat,e.lng],{radius:11,color:c,fillColor:c,fillOpacity:.85,weight:2}).addTo(ovLayer)
+      .bindTooltip(USERS[e.user].name,{permanent:true,direction:"top",offset:[0,-8],className:"namelbl"})
+      .bindPopup(`<b>${USERS[e.user].name}</b><br>${e.type==="in"?"🟢 On duty":"🟡 Off duty"}<br>🕒 ${fmtDate(d)} ${fmtTime(d)}<br>📋 ${e.task||"—"}<br>📍 ${e.lat}, ${e.lng}`);
+    bounds.push([e.lat,e.lng]);});
+  setTimeout(()=>{ovMap.invalidateSize();if(bounds.length)ovMap.fitBounds(bounds,{padding:[50,50],maxZoom:12});},160);
+  // team hours chart (weekly, all engineers)
+  const agg={};
+  pairSessions(ev).forEach(s=>{const k=periodKey(s.date,"week");agg[k]=(agg[k]||0)+s.hours;});
+  const keys=Object.keys(agg).sort().slice(-7);
+  if(ovChart)ovChart.destroy();
+  ovChart=new Chart(document.getElementById("ovChart"),{type:"bar",
+    data:{labels:keys,datasets:[{label:"Team hours",data:keys.map(k=>+agg[k].toFixed(1)),backgroundColor:"#7c3aed",borderRadius:5}]},
+    options:{plugins:{legend:{labels:{color:"#8b97a3"}}},
+      scales:{x:{ticks:{color:"#8b97a3"},grid:{color:"#283039"}},y:{ticks:{color:"#8b97a3"},grid:{color:"#283039"},beginAtZero:true}}}});
 }
 
 /* ===================== EXPORT ===================== */
