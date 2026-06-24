@@ -99,6 +99,67 @@
   @media(hover:none){
     button:active{filter:brightness(1.12)}
   }
+
+  /* ===================== INTRO TOUR (login page) ===================== */
+  .login-head{margin-bottom:16px}
+  .login-layout{display:grid;grid-template-columns:1.4fr .85fr;gap:22px;align-items:start}
+  .login-col .card{max-width:none;margin-top:0}
+  @media(max-width:900px){.login-layout{grid-template-columns:1fr}.demo-stage{order:2}}
+  .demo-stage{background:linear-gradient(180deg,#11171f,#0c1117);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .demo-screen{position:relative;height:330px;border-radius:12px;background:radial-gradient(130% 110% at 50% -10%,#151c25,#0a0e13);border:1px solid var(--line);overflow:hidden}
+  .scene{position:absolute;inset:0;padding:20px;display:none;flex-direction:column;pointer-events:none}
+  .scene.active{display:flex;pointer-events:auto;animation:dmSceneIn .5s ease}
+  .scene.active .anim-fade{animation:dmFadeUp .6s ease both}
+  .scene.active .anim-pop{animation:dmPop .55s cubic-bezier(.2,.9,.3,1.3) both}
+  .scene.active .anim-pin{animation:dmPin .7s cubic-bezier(.2,.8,.3,1.2) both}
+  .scene.active .anim-bar{animation:dmBar .6s ease both}
+  .scene.active .demo-ripple{animation:dmRipple 1.6s ease-out .6s infinite}
+  @keyframes dmSceneIn{from{opacity:.25}to{opacity:1}}
+  @keyframes dmFadeUp{from{transform:translateY(16px)}to{transform:translateY(0)}}
+  @keyframes dmPop{0%{transform:scale(.4)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+  @keyframes dmPin{0%{transform:translateY(-46px)}65%{transform:translateY(4px)}100%{transform:translateY(0)}}
+  @keyframes dmBar{from{transform:translateY(12px)}to{transform:translateY(0)}}
+  @keyframes dmRipple{0%{transform:scale(.4);opacity:.5}100%{transform:scale(2.8);opacity:0}}
+  @keyframes dmPulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.45)}50%{box-shadow:0 0 0 13px rgba(22,163,74,0)}}
+  .demo-pin{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.5);animation:dmPulse 2s ease-in-out infinite}
+  .demo-h{font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:10px}
+  .demo-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(59,130,246,.14);color:#93c5fd;font-size:12px;font-weight:600}
+  .demo-input{background:#0c1117;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px;color:#cbd5e1}
+  .demo-bigbtn{flex:1;border-radius:9px;padding:14px;font-size:13px;font-weight:600;color:#fff;text-align:center;position:relative;overflow:hidden}
+  .demo-bigbtn.green{background:var(--green)}.demo-bigbtn.red{background:var(--red)}
+  .demo-ripple{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:#fff;opacity:0;pointer-events:none}
+  .demo-toast{background:rgba(22,163,74,.14);color:#86efac;border:1px solid rgba(22,163,74,.3);border-radius:8px;padding:8px 12px;font-size:12px;margin-top:12px;align-self:flex-start}
+  .demo-map{background:#0a1410;border:1px solid var(--line);border-radius:10px;position:relative;overflow:hidden;background-image:linear-gradient(#11212b 1px,transparent 1px),linear-gradient(90deg,#11212b 1px,transparent 1px);background-size:28px 28px}
+  .demo-map.mini{height:88px;margin-top:10px}
+  .demo-mappin{position:absolute;width:15px;height:15px;border-radius:50%;border:2px solid #0a0e13;transform:translate(-50%,-50%)}
+  .demo-mappin.green{background:var(--green);box-shadow:0 0 0 5px rgba(22,163,74,.2)}
+  .demo-mappin.amber{background:var(--amber);box-shadow:0 0 0 5px rgba(217,119,6,.2)}
+  .demo-mappin[data-name]::after{content:attr(data-name);position:absolute;left:50%;bottom:135%;transform:translateX(-50%);background:rgba(20,26,33,.92);border:1px solid var(--line);color:#e6edf3;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;white-space:nowrap}
+  .demo-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .demo-kpi{background:#0c1117;border:1px solid var(--line);border-radius:9px;padding:10px 6px;text-align:center}
+  .demo-kpi b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+  .demo-kpi span{font-size:10px;color:var(--muted)}
+  .demo-trow{display:flex;align-items:center;gap:8px;font-size:12px;padding:8px 10px;background:#0c1117;border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
+  .demo-trow .nm{font-weight:600}.demo-trow .tm{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+  .demo-bars{display:flex;align-items:flex-end;gap:9px;height:138px;padding:8px 4px 0}
+  .demo-bars span{flex:1;background:linear-gradient(180deg,#3b82f6,#2563eb);border-radius:5px 5px 0 0;min-width:0}
+  .demo-export{background:var(--accent);color:#fff;font-size:12px;font-weight:600;padding:9px 14px;border-radius:8px}
+  .demo-roles{display:flex;gap:10px;margin-top:16px}
+  .demo-role{background:#0c1117;border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:88px;text-align:left}
+  .demo-role b{display:block;font-size:14px}.demo-role span{font-size:11px;color:var(--muted)}
+  .demo-caption{padding:12px 6px 2px}
+  .demo-cap-title{font-size:14px;font-weight:700}
+  .demo-cap-sub{font-size:12px;color:var(--muted);margin-top:3px;min-height:30px}
+  .demo-progress{height:4px;border-radius:3px;background:#0c1117;overflow:hidden;margin-top:6px}
+  .demo-progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#60a5fa)}
+  .demo-controls{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .demo-btn{width:34px;height:34px;min-height:34px;padding:0;border-radius:8px;background:#0c1117;border:1px solid var(--line);color:var(--txt);font-size:13px;display:grid;place-items:center}
+  .demo-btn:hover{border-color:var(--accent);color:#fff}
+  .demo-dots{display:flex;gap:6px;margin-left:4px}
+  .demo-dot{width:7px;height:7px;border-radius:50%;background:#39424d;cursor:pointer}
+  .demo-dot.active{background:var(--accent);width:18px;border-radius:4px}
+  .demo-tag{margin-left:auto;font-size:11px;color:var(--muted)}
+  @media(max-width:600px){.demo-screen{height:300px}.demo-kpi b{font-size:16px}.demo-bars{height:120px}}
 </style>
 </head>
 <body>
@@ -106,16 +167,122 @@
 
   <!-- LOGIN -->
   <div id="loginView">
-    <h1>GPS Attendance &amp; Field Tracking</h1>
-    <p class="sub">Check in / out, record location, and view team dashboards.</p>
-    <div class="card" style="max-width:440px;margin-top:18px">
-      <label>Username</label>
-      <input id="u" placeholder="e.g. alice">
-      <label>Password</label>
-      <input id="p" type="password" placeholder="Password">
-      <button class="btn-primary full" style="margin-top:18px" onclick="doLogin()">Log in</button>
-      <div class="msg" id="loginMsg"></div>
-      <p class="hint">Engineers: <b>alice</b> · <b>bob</b> · <b>carol</b> · <b>dave</b> (pw <b>pass123</b>)<br>Manager (team live map): <b>admin</b> / <b>admin123</b><br>Boss (overview dashboard): <b>boss</b> / <b>boss123</b></p>
+    <div class="login-head">
+      <h1>GPS Attendance &amp; Field Tracking</h1>
+      <p class="sub">Check in / out, record location, and view team dashboards.</p>
+    </div>
+
+    <div class="login-layout">
+
+      <!-- INTRO TOUR -->
+      <div class="demo-stage" id="demoStage">
+        <div class="demo-screen" id="demoScreen">
+
+          <!-- 0 · Intro -->
+          <div class="scene active" data-sc="0" style="align-items:center;justify-content:center;text-align:center">
+            <div class="anim-pop" style="animation-delay:.05s"><div class="demo-pin">📍</div></div>
+            <div class="anim-fade" style="font-size:21px;font-weight:700;margin-top:16px;animation-delay:.2s">GPS Attendance &amp; Field Tracking</div>
+            <div class="anim-fade" style="color:var(--muted);font-size:13px;margin-top:6px;animation-delay:.32s">Check in with GPS · Track your field team · See it live</div>
+            <div class="anim-fade demo-chip" style="margin-top:18px;animation-delay:.46s">▶ A 30-second tour</div>
+          </div>
+
+          <!-- 1 · Check in -->
+          <div class="scene" data-sc="1">
+            <div class="anim-fade demo-h" style="animation-delay:.05s">Check In / Check Out</div>
+            <div class="anim-fade demo-input" style="animation-delay:.16s">Site visit — Tower B aircon repair</div>
+            <div style="display:flex;gap:10px;margin-top:12px">
+              <div class="anim-pop demo-bigbtn green" style="animation-delay:.3s">📍 Check in now<span class="demo-ripple"></span></div>
+              <div class="anim-pop demo-bigbtn red" style="animation-delay:.4s">🏁 Check out</div>
+            </div>
+            <div class="anim-fade demo-toast" style="animation-delay:1.2s">✓ Checked in 09:12 · 3.157, 101.712</div>
+            <div class="demo-map mini" style="flex:1">
+              <span class="anim-pin demo-mappin green" style="left:46%;top:48%;animation-delay:1s"></span>
+            </div>
+          </div>
+
+          <!-- 2 · Dashboard -->
+          <div class="scene" data-sc="2">
+            <div class="anim-fade demo-h" style="animation-delay:.05s">Team Overview · Today</div>
+            <div class="demo-kpis">
+              <div class="anim-pop demo-kpi" style="animation-delay:.12s"><b data-count="4">0</b><span>Engineers</span></div>
+              <div class="anim-pop demo-kpi" style="animation-delay:.2s"><b data-count="2">0</b><span>On duty now</span></div>
+              <div class="anim-pop demo-kpi" style="animation-delay:.28s"><b data-count="3" data-suffix="/4">0</b><span>Checked in</span></div>
+              <div class="anim-pop demo-kpi" style="animation-delay:.36s"><b style="font-size:15px">08:45</b><span>Avg check-in</span></div>
+            </div>
+            <div class="anim-fade demo-trow" style="animation-delay:.52s"><span class="nm">Alice Tan</span><span class="pill in">ON DUTY</span><span class="tm">09:12</span></div>
+            <div class="anim-fade demo-trow" style="animation-delay:.64s"><span class="nm">Dave Wong</span><span class="pill in">ON DUTY</span><span class="tm">08:50</span></div>
+            <div class="anim-fade demo-trow" style="animation-delay:.76s"><span class="nm">Bob Lim</span><span class="pill out">OFF DUTY</span><span class="tm">17:30</span></div>
+          </div>
+
+          <!-- 3 · Live map -->
+          <div class="scene" data-sc="3" style="padding:16px">
+            <div class="anim-fade demo-h" style="animation-delay:.05s;margin-bottom:8px">Where is everyone?</div>
+            <div class="demo-map" style="flex:1">
+              <span class="anim-pop demo-mappin green" data-name="Alice" style="left:30%;top:36%;animation-delay:.3s"></span>
+              <span class="anim-pop demo-mappin green" data-name="Dave" style="left:62%;top:54%;animation-delay:.45s"></span>
+              <span class="anim-pop demo-mappin amber" data-name="Bob" style="left:43%;top:74%;animation-delay:.6s"></span>
+              <span class="anim-pop demo-mappin amber" data-name="Carol" style="left:75%;top:30%;animation-delay:.75s"></span>
+            </div>
+          </div>
+
+          <!-- 4 · Reports & export -->
+          <div class="scene" data-sc="4">
+            <div class="anim-fade demo-h" style="animation-delay:.05s">Hours worked · Weekly</div>
+            <div class="demo-bars">
+              <span class="anim-bar" style="height:52%;animation-delay:.15s"></span>
+              <span class="anim-bar" style="height:71%;animation-delay:.24s"></span>
+              <span class="anim-bar" style="height:60%;animation-delay:.33s"></span>
+              <span class="anim-bar" style="height:88%;animation-delay:.42s"></span>
+              <span class="anim-bar" style="height:67%;animation-delay:.51s"></span>
+              <span class="anim-bar" style="height:94%;animation-delay:.6s"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px">
+              <div class="anim-fade demo-chip" style="animation-delay:.8s">Total 152.4 hrs</div>
+              <div class="anim-pop demo-export" style="animation-delay:.95s">⬇ Export .xlsx</div>
+            </div>
+          </div>
+
+          <!-- 5 · Log in -->
+          <div class="scene" data-sc="5" style="align-items:center;justify-content:center;text-align:center">
+            <div class="anim-fade" style="font-size:18px;font-weight:700;animation-delay:.05s">Pick a role and log in →</div>
+            <div class="demo-roles">
+              <div class="anim-pop demo-role" style="animation-delay:.2s"><b>Engineer</b><span>Check in / out</span></div>
+              <div class="anim-pop demo-role" style="animation-delay:.32s"><b>Manager</b><span>Live map</span></div>
+              <div class="anim-pop demo-role" style="animation-delay:.44s"><b>Boss</b><span>Dashboard</span></div>
+            </div>
+            <div class="anim-fade" style="color:var(--muted);font-size:12px;margin-top:16px;animation-delay:.6s">Demo accounts are listed under the login form</div>
+          </div>
+
+        </div>
+
+        <div class="demo-caption">
+          <div class="demo-cap-title" id="demoCapTitle">GPS Attendance &amp; Field Tracking</div>
+          <div class="demo-cap-sub" id="demoCapSub">A quick tour of how check-in, tracking and reporting work.</div>
+          <div class="demo-progress"><div class="demo-progress-bar" id="demoProg"></div></div>
+        </div>
+
+        <div class="demo-controls">
+          <button class="demo-btn" id="demoPrev" type="button">‹</button>
+          <button class="demo-btn" id="demoPlay" type="button">❚❚</button>
+          <button class="demo-btn" id="demoNext" type="button">›</button>
+          <div class="demo-dots" id="demoDots"></div>
+          <div class="demo-tag">Intro tour</div>
+        </div>
+      </div>
+
+      <!-- LOGIN CARD -->
+      <div class="login-col">
+        <div class="card" style="max-width:440px;margin-top:0">
+          <label>Username</label>
+          <input id="u" placeholder="e.g. alice">
+          <label>Password</label>
+          <input id="p" type="password" placeholder="Password">
+          <button class="btn-primary full" style="margin-top:18px" onclick="doLogin()">Log in</button>
+          <div class="msg" id="loginMsg"></div>
+          <p class="hint">Engineers: <b>alice</b> · <b>bob</b> · <b>carol</b> · <b>dave</b> (pw <b>pass123</b>)<br>Manager (team live map): <b>admin</b> / <b>admin123</b><br>Boss (overview dashboard): <b>boss</b> / <b>boss123</b></p>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -303,6 +470,7 @@ function doLogin(){
     document.getElementById("whoRole").textContent="· "+rec.role;
     document.getElementById("loginView").classList.add("hidden");
     document.getElementById("appView").classList.remove("hidden");
+    demoStop();
     buildNav(); populateFilters(); showTab(isManager()?"overview":"checkin");
   }else flash("loginMsg","Invalid username or password.","err");
 }
@@ -312,6 +480,7 @@ function logout(){
   document.getElementById("loginView").classList.remove("hidden");
   document.getElementById("u").value="";document.getElementById("p").value="";
   document.getElementById("loginMsg").className="msg";
+  demoStart();
 }
 
 /* ===================== NAV ===================== */
@@ -591,8 +760,55 @@ function exportXlsx(kind){
   }
 }
 
+/* ===================== INTRO TOUR ===================== */
+const DEMO=[
+  {t:"GPS Attendance & Field Tracking", s:"A quick tour of how check-in, tracking and reporting work."},
+  {t:"1 · Staff check in from the field", s:"One tap records GPS location and a timestamp — for any task or site."},
+  {t:"2 · The boss sees everyone at a glance", s:"Live dashboard: who's on duty, check-in times and hours today."},
+  {t:"3 · Know where every engineer is", s:"Latest GPS position of each person on duty, across every site."},
+  {t:"4 · Hours, reports & one-click export", s:"Daily / weekly / monthly summaries — export to Excel anytime."},
+  {t:"Ready when you are", s:"Log in on the right — demo accounts are listed under the form."}
+];
+const DEMO_DUR=8500;
+let demoIdx=0, demoPlaying=true, demoTimer=null;
+let _dProg,_dCapT,_dCapS,_dDots,_dPlay,_dScenes;
+function demoInit(){
+  if(!document.getElementById("demoStage"))return;
+  _dProg=document.getElementById("demoProg");_dCapT=document.getElementById("demoCapTitle");
+  _dCapS=document.getElementById("demoCapSub");_dDots=document.getElementById("demoDots");
+  _dPlay=document.getElementById("demoPlay");
+  _dScenes=[...document.querySelectorAll("#demoScreen .scene")];
+  _dDots.innerHTML="";
+  DEMO.forEach((_,i)=>{const d=document.createElement("span");d.className="demo-dot";d.onclick=()=>{demoShow(i);demoRestart();};_dDots.appendChild(d);});
+  document.getElementById("demoPrev").onclick=()=>{demoShow(demoIdx-1);demoRestart();};
+  document.getElementById("demoNext").onclick=()=>{demoShow(demoIdx+1);demoRestart();};
+  _dPlay.onclick=demoToggle;
+  demoShow(0);demoRestart();
+}
+function demoShow(i){
+  demoIdx=(i+DEMO.length)%DEMO.length;
+  _dScenes.forEach((s,k)=>s.classList.toggle("active",k===demoIdx));
+  _dCapT.textContent=DEMO[demoIdx].t;_dCapS.textContent=DEMO[demoIdx].s;
+  [..._dDots.children].forEach((d,k)=>d.classList.toggle("active",k===demoIdx));
+  _dProg.style.transition="none";_dProg.style.width="0%";void _dProg.offsetWidth;
+  if(demoPlaying){_dProg.style.transition="width "+DEMO_DUR+"ms linear";_dProg.style.width="100%";}
+  if(demoIdx===2)demoCountUp();
+}
+function demoRestart(){clearTimeout(demoTimer);if(demoPlaying)demoTimer=setTimeout(()=>{demoShow(demoIdx+1);demoRestart();},DEMO_DUR);}
+function demoToggle(){demoPlaying=!demoPlaying;_dPlay.textContent=demoPlaying?"❚❚":"▶";if(demoPlaying){demoShow(demoIdx);demoRestart();}else{clearTimeout(demoTimer);_dProg.style.transition="none";}}
+function demoStop(){demoPlaying=false;clearTimeout(demoTimer);}
+function demoStart(){if(!_dPlay)return;demoPlaying=true;_dPlay.textContent="❚❚";demoShow(0);demoRestart();}
+function demoCountUp(){
+  document.querySelectorAll('#demoScreen .scene[data-sc="2"] [data-count]').forEach(el=>{
+    const to=+el.dataset.count,suf=el.dataset.suffix||"",steps=18;let cur=0;
+    clearInterval(el._t);
+    el._t=setInterval(()=>{cur++;el.textContent=Math.round(to*cur/steps)+suf;if(cur>=steps){el.textContent=to+suf;clearInterval(el._t);}},32);
+  });
+}
+
 /* ===================== INIT ===================== */
 seed();
+demoInit();
 </script>
 </body>
 </html>
